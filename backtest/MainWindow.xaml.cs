@@ -86,16 +86,32 @@ namespace backtest
             PlotModel.PlotAreaBorderColor = OxyColor.FromRgb(25, 25, 25);   // Bordure du graphique
 
 
-            // Axe X
-            PlotModel.Axes.Add(new DateTimeAxis
+            // Axe X avec adaptation du format
+            var dateAxis = new DateTimeAxis
             {
                 Position = AxisPosition.Bottom,
-                StringFormat = "yyyy-MM-dd HH:mm",
                 MinorIntervalType = DateTimeIntervalType.Hours,
                 IntervalType = DateTimeIntervalType.Days,
                 IsZoomEnabled = true,
                 IsPanEnabled = true,
-            });
+                StringFormat = "dd", // par défaut, juste le jour
+            };
+
+            // Hook pour ajuster dynamiquement le format selon l'échelle
+            dateAxis.AxisChanged += (s, e) =>
+            {
+                var axis = s as DateTimeAxis;
+                if (axis == null) return;
+
+                double totalDays = axis.ActualMaximum - axis.ActualMinimum;
+
+                if (totalDays < 1) // si les bougies sont très proches (moins d'un jour)
+                    axis.StringFormat = "HH:mm"; // afficher l'heure
+                else
+                    axis.StringFormat = "dd"; // sinon juste le jour
+            };
+
+            PlotModel.Axes.Add(dateAxis);
 
             // Axe Y
             PlotModel.Axes.Add(new LinearAxis
