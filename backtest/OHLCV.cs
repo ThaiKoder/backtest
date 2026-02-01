@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
@@ -51,6 +52,36 @@ namespace backtest
         [JsonPropertyName("instrument_id")]
         public int InstrumentId { get; set; }
     }
+
+    internal class OHLCVNormalizer
+    {
+        // Méthode pour lire un fichier et retourner tous les OHLCV normalisés
+        public static List<OHLCV> Normalize(string filePath)
+        {
+            var ohlcvs = new List<OHLCV>();
+
+            foreach (var line in File.ReadLines(filePath))
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    try
+                    {
+                        OHLCV? ohlcv = JsonSerializer.Deserialize<OHLCV>(line);
+                        if (ohlcv != null)
+                            ohlcvs.Add(ohlcv);
+                    }
+                    catch (JsonException ex)
+                    {
+                        Debug.WriteLine($"Erreur de désérialisation : {ex.Message}");
+                    }
+                }
+            }
+
+            return ohlcvs;
+        }
+    }
+
+
 
 
     internal class ParseStringToDecimalConverter : JsonConverter<decimal>

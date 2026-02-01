@@ -38,29 +38,7 @@ namespace backtest
             ///////////////////////////////
             //Normalizer
             ///////////////////////////////
-            // Liste pour stocker les OHLCV
-            List<OHLCV> ohlcvs = new List<OHLCV>();
-
-            // Lire chaque ligne du fichier
-            foreach (var line in File.ReadLines(filePath))
-            {
-                if (!string.IsNullOrWhiteSpace(line))
-                {
-                    try
-                    {
-                        OHLCV? ohlcv = JsonSerializer.Deserialize<OHLCV>(line);
-                        if (ohlcv != null)
-                        {
-                            ohlcvs.Add(ohlcv);
-                        }
-                    }
-                    catch (JsonException ex)
-                    {
-                        Debug.WriteLine($"Erreur de désérialisation : {ex.Message}");
-                    }
-                }
-            }
-
+            var ohlcvs = OHLCVNormalizer.Normalize(filePath);
             //// Exemple d'affichage
             foreach (var o in ohlcvs)
             {
