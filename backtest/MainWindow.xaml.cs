@@ -39,11 +39,6 @@ namespace backtest
             //Normalizer
             ///////////////////////////////
             var ohlcvs = OHLCVNormalizer.Normalize(filePath);
-            //// Exemple d'affichage
-            foreach (var o in ohlcvs)
-            {
-                Debug.WriteLine($"{o.Symbol} - {o.Hd.Timestamp}: O={o.Open}, H={o.High}, L={o.Low}, C={o.Close}, V={o.Volume}");
-            }
 
 
             ///////////////////////////////
@@ -114,6 +109,11 @@ namespace backtest
             }
 
             PlotModel.Series.Add(candleSeries);
+        }
+
+        private void M5_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
