@@ -31,16 +31,41 @@ namespace backtest
             ///////////////////////////////
             //READ
             ///////////////////////////////
-            string jsonString = File.ReadAllText("data.json");
-
-            Debug.WriteLine(jsonString);
-
+            string filePath = "data.json";
+            string jsonString = File.ReadAllText(filePath);
 
 
             ///////////////////////////////
             //Normalizer
             ///////////////////////////////
+            // Liste pour stocker les OHLCV
+            List<OHLCV> ohlcvs = new List<OHLCV>();
 
+            // Lire chaque ligne du fichier
+            foreach (var line in File.ReadLines(filePath))
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    try
+                    {
+                        OHLCV? ohlcv = JsonSerializer.Deserialize<OHLCV>(line);
+                        if (ohlcv != null)
+                        {
+                            ohlcvs.Add(ohlcv);
+                        }
+                    }
+                    catch (JsonException ex)
+                    {
+                        Debug.WriteLine($"Erreur de désérialisation : {ex.Message}");
+                    }
+                }
+            }
+
+            //// Exemple d'affichage
+            foreach (var o in ohlcvs)
+            {
+                Debug.WriteLine($"{o.Symbol} - {o.Hd.Timestamp}: O={o.Open}, H={o.High}, L={o.Low}, C={o.Close}, V={o.Volume}");
+            }
 
 
             ///////////////////////////////
