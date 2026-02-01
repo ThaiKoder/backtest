@@ -52,6 +52,7 @@ namespace backtest
         public int InstrumentId { get; set; }
     }
 
+
     internal class ParseStringToDecimalConverter : JsonConverter<decimal>
     {
         public override decimal Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

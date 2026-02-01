@@ -79,15 +79,22 @@ namespace backtest
             InitializeComponent();
             DataContext = this;
 
-            PlotModel = new PlotModel { Title = "Single Candlestick" };
+            PlotModel = new PlotModel();
+
+            PlotModel.Background = OxyColor.FromRgb(25, 25, 25);            // Fond noir
+            PlotModel.TextColor = OxyColor.FromRgb(182, 182, 182);            // Texte général blanc
+            PlotModel.PlotAreaBorderColor = OxyColor.FromRgb(25, 25, 25);   // Bordure du graphique
+
 
             // Axe X
             PlotModel.Axes.Add(new DateTimeAxis
             {
                 Position = AxisPosition.Bottom,
-                StringFormat = "HH:mm",
+                StringFormat = "yyyy-MM-dd HH:mm",
+                MinorIntervalType = DateTimeIntervalType.Hours,
+                IntervalType = DateTimeIntervalType.Days,
                 IsZoomEnabled = true,
-                IsPanEnabled = true
+                IsPanEnabled = true,
             });
 
             // Axe Y
@@ -95,23 +102,23 @@ namespace backtest
             {
                 Position = AxisPosition.Left,
                 IsZoomEnabled = true,
-                IsPanEnabled = true
+                IsPanEnabled = true,
             });
 
             // Candlestick
             var candleSeries = new CandleStickSeries
             {
-                IncreasingColor = OxyColors.Green,
-                DecreasingColor = OxyColors.Red
+                IncreasingColor = OxyColor.FromRgb(8, 153, 129), // vert
+                DecreasingColor = OxyColor.FromRgb(242, 54, 69) // rouge
             };
 
-            double open = 100;
-            double high = 105;
-            double low = 95;
-            double close = 102;
-            double time = DateTimeAxis.ToDouble(DateTime.Now);
+            // Remplir la série avec les OHLCV
+            foreach (var o in ohlcvs)
+            {
+                double time = DateTimeAxis.ToDouble(o.Hd.Timestamp); // Conversion en double pour OxyPlot
+                candleSeries.Items.Add(new HighLowItem(time, (double)o.High, (double)o.Low, (double)o.Open, (double)o.Close));
+            }
 
-            candleSeries.Items.Add(new HighLowItem(time, high, low, open, close));
             PlotModel.Series.Add(candleSeries);
         }
     }
