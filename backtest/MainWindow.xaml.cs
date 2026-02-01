@@ -115,5 +115,10 @@ namespace backtest
         {
 
         }
+
+        private void backtest_Click(object sender, RoutedEventArgs e)
+        {
+            Debug.WriteLine("Backtest clicked");
+        }
     }
 }
