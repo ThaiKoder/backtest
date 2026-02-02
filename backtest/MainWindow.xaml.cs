@@ -25,13 +25,15 @@ namespace backtest
     public partial class MainWindow : Window
     {
         public Chart Chart { get; }
+        string filePath = "data.json";
+        string contractName = "NQH6";
 
         public MainWindow()
         {
             ///////////////////////////////
             //READ
             ///////////////////////////////
-            string filePath = "data.json";
+            
             string jsonString = File.ReadAllText(filePath);
 
 
@@ -48,7 +50,7 @@ namespace backtest
             ///////////////////////////////
             //Chart
             ///////////////////////////////
-            Chart = new Chart(ohlcvs, "NQH6");
+            Chart = new Chart(ohlcvs, contractName);
             DataContext = this;
         }
 
