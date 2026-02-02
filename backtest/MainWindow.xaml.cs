@@ -87,12 +87,14 @@ namespace backtest
             PlotModel.Axes.Add(dateAxis);
 
             // Axe Y
-            PlotModel.Axes.Add(new LinearAxis
+            var yAxis = new LinearAxis
             {
                 Position = AxisPosition.Left,
                 IsZoomEnabled = true,
-                IsPanEnabled = true,
-            });
+                IsPanEnabled = true
+            };
+
+            PlotModel.Axes.Add(yAxis);
 
             // Candlestick
             var candleSeries = new CandleStickSeries
@@ -101,13 +103,50 @@ namespace backtest
                 DecreasingColor = OxyColor.FromRgb(242, 54, 69) // rouge
             };
 
-            // Remplir la série avec les OHLCV
+
             foreach (var o in ohlcvs)
             {
-                double time = DateTimeAxis.ToDouble(o.Hd.Timestamp); // Conversion en double pour OxyPlot
-                candleSeries.Items.Add(new HighLowItem(time, (double)o.High, (double)o.Low, (double)o.Open, (double)o.Close));
+                if (o.Symbol == "NQH6")
+
+                {
+                    candleSeries.Items.Add(new HighLowItem(
+                        DateTimeAxis.ToDouble(o.Hd.Timestamp),
+                        (long)o.High,
+                        (long)o.Low,
+                        (long)o.Open,
+                        (long)o.Close
+                    ));
+                }
+
             }
 
+            //PlotModel.Series.Add(candleSeries);
+
+            // ZOOM INITIAL X (200 candles)
+            int visibleCandles = Math.Min(200, candleSeries.Items.Count);
+
+            var first = candleSeries.Items[^visibleCandles];
+            var last = candleSeries.Items.Last();
+
+            dateAxis.Minimum = first.X;
+            dateAxis.Maximum = last.X;
+
+            // ZOOM INITIAL Y
+            var lastCandles = candleSeries.Items
+                .TakeLast(visibleCandles)
+                .ToList();
+
+            double avgRange = lastCandles.Average(c => c.High - c.Low);
+            double visibleRange = Math.Max(avgRange * 20, 0.0001);
+
+            double lastClose = lastCandles.Last().Close;
+
+            yAxis.Minimum = lastClose - visibleRange / 2;
+            yAxis.Maximum = lastClose + visibleRange / 2;
+
+
+            // REFRESH
+            PlotModel.InvalidatePlot(true);
             PlotModel.Series.Add(candleSeries);
         }
 
