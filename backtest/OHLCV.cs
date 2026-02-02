@@ -9,36 +9,36 @@ using System.Text.Json.Serialization;
 namespace backtest
 {
     //exemple: {"hd":{"ts_event":"2022-06-10T12:30:00.000000000Z","rtype":33,"publisher_id":2,"instrument_id":7370},"open":"265.760000000","high":"265.760000000","low":"261.010000000","close":"261.060000000","volume":"3006","symbol":"MSFT"}
-    internal class OHLCV
+    public class OHLCV
     {
         [JsonPropertyName("hd")]
         public Header Hd { get; set; } = new Header();
 
         [JsonPropertyName("open")]
-        [JsonConverter(typeof(ParseStringToDecimalConverter))]
-        public decimal Open { get; set; }
+        [JsonConverter(typeof(ParseStringToLongConverter))]
+        public long Open { get; set; }
 
         [JsonPropertyName("high")]
-        [JsonConverter(typeof(ParseStringToDecimalConverter))]
-        public decimal High { get; set; }
+        [JsonConverter(typeof(ParseStringToLongConverter))]
+        public long High { get; set; }
 
         [JsonPropertyName("low")]
-        [JsonConverter(typeof(ParseStringToDecimalConverter))]
-        public decimal Low { get; set; }
+        [JsonConverter(typeof(ParseStringToLongConverter))]
+        public long Low { get; set; }
 
         [JsonPropertyName("close")]
-        [JsonConverter(typeof(ParseStringToDecimalConverter))]
-        public decimal Close { get; set; }
+        [JsonConverter(typeof(ParseStringToLongConverter))]
+        public long Close { get; set; }
 
         [JsonPropertyName("volume")]
-        [JsonConverter(typeof(ParseStringToLongConverter))]
-        public long Volume { get; set; }
+        [JsonConverter(typeof(ParseStringToDecimalConverter))]
+        public decimal Volume { get; set; }
 
         [JsonPropertyName("symbol")]
         public string Symbol { get; set; } = string.Empty;
     }
 
-    internal class Header
+    public class Header
     {
         [JsonPropertyName("ts_event")]
         public DateTime Timestamp { get; set; }
