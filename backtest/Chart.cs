@@ -113,5 +113,31 @@ namespace backtest
             _yAxis.Minimum = lastClose - visibleRange / 2;
             _yAxis.Maximum = lastClose + visibleRange / 2;
         }
+
+
+        public void UpdateData(IEnumerable<OHLCV> ohlcvs, string symbol)
+        {
+            // 1️ Vider les anciennes bougies
+            _candleSeries.Items.Clear();
+
+            // 2️ Ajouter les nouvelles bougies
+            foreach (var o in ohlcvs.Where(x => x.Symbol == symbol))
+            {
+                _candleSeries.Items.Add(new HighLowItem(
+                    DateTimeAxis.ToDouble(o.Hd.Timestamp),
+                    o.High,
+                    o.Low,
+                    o.Open,
+                    o.Close
+                ));
+            }
+
+            // 3️ Recalculer le zoom initial
+            ApplyInitialZoom(200);
+
+            // 4️ Rafraichir le graphique
+            Model.InvalidatePlot(true);
+        }
+
     }
 }
