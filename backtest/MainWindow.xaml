@@ -17,5 +17,7 @@
         <Button Content="H1" HorizontalAlignment="Left" Margin="203,10,0,0" VerticalAlignment="Top" Background="#FF191919" Foreground="#FFB6B6B6" BorderBrush="#00707070" Cursor="Hand" Click="H1_Click"/>
         <Button Content="H4" HorizontalAlignment="Left" Margin="227,10,0,0" VerticalAlignment="Top" Background="#FF191919" Foreground="#FFB6B6B6" BorderBrush="#00707070" Cursor="Hand" Click="H4_Click"/>
         <Button Content="Backtest" HorizontalAlignment="Right" Margin="0,5,10,0" VerticalAlignment="Top" Background="#FF191919" Foreground="#FFB6B6B6" BorderBrush="#00707070" Cursor="Hand" Click="backtest_Click"/>
+        <Button Content="ETH" HorizontalAlignment="Right" Margin="0,0,40,24" VerticalAlignment="Bottom" Background="#FF191919" Foreground="#FFB6B6B6" BorderBrush="#00707070" Cursor="Hand" Click="ETH_Click"/>
+        <Button Content="RTH" HorizontalAlignment="Right" Margin="0,0,10,24" VerticalAlignment="Bottom" Background="#FF191919" Foreground="#FFB6B6B6" BorderBrush="#00707070" Cursor="Hand" Click="RTH_Click"/>
     </Grid>
 </Window>

@@ -147,5 +147,15 @@ namespace backtest
 
             TimesFrameState = TimeFrames.H4;
         }
+
+        private void RTH_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ETH_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
