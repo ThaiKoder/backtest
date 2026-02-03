@@ -110,10 +110,30 @@ namespace backtest
 
 
 
+        private PanelWindow _panel;
+
+        private void OpenPanel()
+        {
+            if (_panel != null)
+            {
+                _panel.Activate();
+                return;
+            }
+
+            _panel = new PanelWindow
+            {
+                Owner = this // 🔗 lien minimal
+            };
+
+            _panel.Closed += (s, e) => _panel = null;
+            _panel.Show();
+        }
+
 
 
         private void backtest_Click(object sender, RoutedEventArgs e)
         {
+            OpenPanel();
             Debug.WriteLine("Backtest clicked");
         }
 
