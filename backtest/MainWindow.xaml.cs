@@ -4,6 +4,7 @@ using OxyPlot.Series;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
 using System.Windows;
@@ -134,8 +135,18 @@ namespace backtest
 
         private void backtest_Click(object sender, RoutedEventArgs e)
         {
-            OpenPanel();
+            var killZones = new KillZones(timeFrameData);
+
+            var zone = killZones.CalculateZone(
+                DateTime.Parse("2026-01-18T23:02:00.000000000Z"),
+                DateTime.Parse("2026-01-18T23:29:00.000000000Z")
+
+            );
+
             Debug.WriteLine("Backtest clicked");
+            Debug.WriteLine(zone);
+            Chart.ApplyZoomCandle();
+            OpenPanel();
         }
 
         private void M1_Click(object sender, RoutedEventArgs e)
