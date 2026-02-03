@@ -41,6 +41,8 @@ namespace backtest
 
         private CandleBus _candleBus = new CandleBus();
         private TimeFrames TimesFrameState = TimeFrames.M1;
+        private List<OHLCV> m1Data;
+        private List<OHLCV> timeFrameData;
 
 
         public MainWindow()
@@ -54,8 +56,11 @@ namespace backtest
             ///////////////////////////////
             //Normalizer
             ///////////////////////////////
-            var ohlcvs = OHLCVNormalizer.Normalize(filePath);
+            m1Data = OHLCVNormalizer.Normalize(filePath)
+                .Where(o => o.Symbol == contractName)
+                .ToList();
 
+            timeFrameData = m1Data;
 
             ///////////////////////////////
             //Candle bus
@@ -66,28 +71,10 @@ namespace backtest
             ///////////////////////////////
             //Chart
             ///////////////////////////////
-            Chart = new Chart(ohlcvs, contractName);
+            Chart = new Chart(m1Data, contractName);
             DataContext = this;
         }
 
-        private void M5_Click(object sender, RoutedEventArgs e)
-        {
-            if (TimesFrameState == TimeFrames.M5)
-                return;
-
-
-            var m1Data = OHLCVNormalizer.Normalize(filePath)
-                .Where(o => o.Symbol == contractName)
-                .ToList(); // ToList pour éviter plusieurs énumérations
-
-            // Publier M5 (le CandleBus fera juste passer les données sans ré-agréger)
-            _candleBus.Publish(m1Data, TimeFrame.M5);
-
-            // Mettre à jour le chart
-            Chart.UpdateData(_candleBus.CandleBusStream.ToList(), contractName);
-
-            TimesFrameState = TimeFrames.M5;
-        }
 
 
         private void backtest_Click(object sender, RoutedEventArgs e)
@@ -100,23 +87,21 @@ namespace backtest
             if (TimesFrameState == TimeFrames.M1)
                 return;
 
-
-            var m1Data = OHLCVNormalizer.Normalize(filePath)
-                .Where(o => o.Symbol == contractName)
-                .ToList(); // ToList pour éviter plusieurs énumérations
-
-            // Indiquer que c'est un clic utilisateur
-            _candleBus.IsUserClick = true;
-
-
-            // Publier M5 (le CandleBus fera juste passer les données sans ré-agréger)
-            _candleBus.Publish(m1Data, TimeFrame.M1);
-
-            // Mettre à jour le chart
-            Chart.UpdateData(_candleBus.CandleBusStream.ToList(), contractName);
+            var busData = _candleBus.BuildFromM1(m1Data, TimeFrame.M1);
+            Chart.UpdateData(busData, contractName);
 
             TimesFrameState = TimeFrames.M1;
+        }
 
+        private void M5_Click(object sender, RoutedEventArgs e)
+        {
+            if (TimesFrameState == TimeFrames.M5)
+                return;
+
+            var busData = _candleBus.BuildFromM1(m1Data, TimeFrame.M5);
+            Chart.UpdateData(busData, contractName);
+
+            TimesFrameState = TimeFrames.M5;
         }
 
         private void M15_Click(object sender, RoutedEventArgs e)
@@ -124,35 +109,43 @@ namespace backtest
             if (TimesFrameState == TimeFrames.M15)
                 return;
 
-            // Indiquer que c'est un clic utilisateur
-            _candleBus.IsUserClick = true;
-
-            var m1Data = OHLCVNormalizer.Normalize(filePath)
-                .Where(o => o.Symbol == contractName)
-                .ToList(); // ToList pour éviter plusieurs énumérations
-
-            // Publier M5 (le CandleBus fera juste passer les données sans ré-agréger)
-            _candleBus.Publish(m1Data, TimeFrame.M15);
-
-            // Mettre à jour le chart
-            Chart.UpdateData(_candleBus.CandleBusStream.ToList(), contractName);
+            var busData = _candleBus.BuildFromM1(m1Data, TimeFrame.M15);
+            Chart.UpdateData(busData, contractName);
 
             TimesFrameState = TimeFrames.M15;
         }
 
         private void M30_Click(object sender, RoutedEventArgs e)
         {
+            if (TimesFrameState == TimeFrames.M30)
+                return;
 
+            var busData = _candleBus.BuildFromM1(m1Data, TimeFrame.M30);
+            Chart.UpdateData(busData, contractName);
+
+            TimesFrameState = TimeFrames.M30;
         }
 
         private void H1_Click(object sender, RoutedEventArgs e)
         {
+            if (TimesFrameState == TimeFrames.H1)
+                return;
 
+            var busData = _candleBus.BuildFromM1(m1Data, TimeFrame.H1);
+            Chart.UpdateData(busData, contractName);
+
+            TimesFrameState = TimeFrames.H1;
         }
 
         private void H4_Click(object sender, RoutedEventArgs e)
         {
+            if (TimesFrameState == TimeFrames.H4)
+                return;
 
+            var busData = _candleBus.BuildFromM1(m1Data, TimeFrame.H4);
+            Chart.UpdateData(busData, contractName);
+
+            TimesFrameState = TimeFrames.H4;
         }
     }
 }
