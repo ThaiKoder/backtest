@@ -33,6 +33,13 @@ namespace backtest
         H1,
         H4
     }
+
+    public enum SessionType
+    {
+        RTH,
+        ETH
+    }
+
     public partial class MainWindow : Window
     {
         public Chart Chart { get; }
@@ -41,6 +48,7 @@ namespace backtest
 
         private CandleBus _candleBus = new CandleBus();
         private TimeFrames TimesFrameState = TimeFrames.M1;
+        private SessionType SessionTypeState = SessionType.RTH;
         private List<OHLCV> m1Data;
         private List<OHLCV> timeFrameData;
 
@@ -62,6 +70,7 @@ namespace backtest
 
             timeFrameData = m1Data;
 
+
             ///////////////////////////////
             //Candle bus
             ///////////////////////////////
@@ -76,6 +85,32 @@ namespace backtest
         }
 
 
+        private bool IsRTH(DateTime t) //UTC time
+        {
+            if (t.DayOfWeek == DayOfWeek.Saturday || t.DayOfWeek == DayOfWeek.Sunday)
+                return false;
+
+            var time = t.TimeOfDay;
+            return time >= new TimeSpan(14, 30, 0)
+                && time <= new TimeSpan(21, 0, 0);
+        }
+
+
+        private bool IsETH(DateTime t) // UTC time
+        {
+            if (t.DayOfWeek == DayOfWeek.Saturday || t.DayOfWeek == DayOfWeek.Sunday)
+                return false;
+
+            var time = t.TimeOfDay;
+
+            // session qui traverse minuit
+            return time >= new TimeSpan(23, 0, 0)
+                || time < new TimeSpan(22, 0, 0);
+        }
+
+
+
+
 
         private void backtest_Click(object sender, RoutedEventArgs e)
         {
@@ -87,7 +122,7 @@ namespace backtest
             if (TimesFrameState == TimeFrames.M1)
                 return;
 
-            var busData = _candleBus.BuildFromM1(m1Data, TimeFrame.M1);
+            var busData = _candleBus.BuildFromM1(timeFrameData, TimeFrame.M1);
             Chart.UpdateData(busData, contractName);
 
             TimesFrameState = TimeFrames.M1;
@@ -98,18 +133,19 @@ namespace backtest
             if (TimesFrameState == TimeFrames.M5)
                 return;
 
-            var busData = _candleBus.BuildFromM1(m1Data, TimeFrame.M5);
+            var busData = _candleBus.BuildFromM1(timeFrameData, TimeFrame.M5);
             Chart.UpdateData(busData, contractName);
 
             TimesFrameState = TimeFrames.M5;
         }
+
 
         private void M15_Click(object sender, RoutedEventArgs e)
         {
             if (TimesFrameState == TimeFrames.M15)
                 return;
 
-            var busData = _candleBus.BuildFromM1(m1Data, TimeFrame.M15);
+            var busData = _candleBus.BuildFromM1(timeFrameData, TimeFrame.M15);
             Chart.UpdateData(busData, contractName);
 
             TimesFrameState = TimeFrames.M15;
@@ -120,7 +156,7 @@ namespace backtest
             if (TimesFrameState == TimeFrames.M30)
                 return;
 
-            var busData = _candleBus.BuildFromM1(m1Data, TimeFrame.M30);
+            var busData = _candleBus.BuildFromM1(timeFrameData, TimeFrame.M30);
             Chart.UpdateData(busData, contractName);
 
             TimesFrameState = TimeFrames.M30;
@@ -131,7 +167,7 @@ namespace backtest
             if (TimesFrameState == TimeFrames.H1)
                 return;
 
-            var busData = _candleBus.BuildFromM1(m1Data, TimeFrame.H1);
+            var busData = _candleBus.BuildFromM1(timeFrameData, TimeFrame.H1);
             Chart.UpdateData(busData, contractName);
 
             TimesFrameState = TimeFrames.H1;
@@ -142,20 +178,42 @@ namespace backtest
             if (TimesFrameState == TimeFrames.H4)
                 return;
 
-            var busData = _candleBus.BuildFromM1(m1Data, TimeFrame.H4);
+            var busData = _candleBus.BuildFromM1(timeFrameData, TimeFrame.H4);
             Chart.UpdateData(busData, contractName);
 
             TimesFrameState = TimeFrames.H4;
         }
 
-        private void RTH_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void ETH_Click(object sender, RoutedEventArgs e)
         {
+            if (SessionTypeState == SessionType.ETH)
+                return;
 
+            timeFrameData = m1Data
+                .Where(c => IsETH(c.Hd.Timestamp))
+                .ToList();
+
+            var busData = _candleBus.BuildFromM1(timeFrameData, (TimeFrame)TimesFrameState);
+            Chart.UpdateData(busData, contractName);
+
+            SessionTypeState = SessionType.ETH;
         }
+
+
+        private void RTH_Click(object sender, RoutedEventArgs e)
+        {
+            if (SessionTypeState == SessionType.RTH)
+                return;
+
+            timeFrameData = m1Data
+                .Where(c => IsRTH(c.Hd.Timestamp))
+                .ToList();
+
+            var busData = _candleBus.BuildFromM1(timeFrameData, (TimeFrame)TimesFrameState);
+            Chart.UpdateData(busData, contractName);
+
+            SessionTypeState = SessionType.RTH;
+        }
+
     }
 }
