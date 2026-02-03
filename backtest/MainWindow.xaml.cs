@@ -1,6 +1,7 @@
 ﻿using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -235,5 +236,9 @@ namespace backtest
             SessionTypeState = SessionType.RTH;
         }
 
+        private void findcandle_Click(object sender, RoutedEventArgs e)
+        {
+            Chart.ApplyZoomCandle();
+        }
     }
 }

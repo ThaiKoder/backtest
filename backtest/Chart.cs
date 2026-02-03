@@ -138,6 +138,51 @@ namespace backtest
             // 4️ Rafraichir le graphique
             Model.InvalidatePlot(true);
         }
+        public void ApplyZoomCandle()
+        {
+            if (_candleSeries.Items.Count == 0)
+                return;
+
+            int visibleCandles = 200; 
+
+            // Timestamp cible
+            DateTime targetTimestamp = new DateTime(2026, 1, 23, 20, 14, 0);
+            double targetX = DateTimeAxis.ToDouble(targetTimestamp);
+
+            // Trouver la bougie cible la plus proche du timestamp
+            var targetCandle = _candleSeries.Items
+                .OrderBy(c => Math.Abs(c.X - targetX))
+                .FirstOrDefault();
+
+            if (targetCandle == null)
+                return; // aucune bougie trouvée
+
+            int targetIndex = _candleSeries.Items.IndexOf(targetCandle);
+
+            // Déterminer l'index de fin pour 200 bougies après
+            int endIndex = Math.Min(targetIndex + visibleCandles, _candleSeries.Items.Count - 1);
+
+            // Segment de bougies à afficher
+            var segment = _candleSeries.Items.Skip(targetIndex).Take(endIndex - targetIndex + 1).ToList();
+
+            if (segment.Count == 0)
+                return;
+
+            // Définir les limites de l'axe X
+            _xAxis.Minimum = segment.First().X;
+            _xAxis.Maximum = segment.Last().X;
+
+            // Définir les limites de l'axe Y autour du segment
+            double minY = segment.Min(c => c.Low);
+            double maxY = segment.Max(c => c.High);
+            double padding = (maxY - minY) * 0.1; // 10% de marge
+            _yAxis.Minimum = minY - padding;
+            _yAxis.Maximum = maxY + padding;
+
+            //Rafraichir le graphique
+            Model.InvalidatePlot(true);
+        }
+
 
     }
 }
