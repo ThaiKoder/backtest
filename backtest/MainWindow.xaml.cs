@@ -43,6 +43,8 @@ namespace backtest
         ETH
     }
 
+
+
     public partial class MainWindow : Window
     {
         public Chart Chart { get; }
@@ -56,24 +58,51 @@ namespace backtest
         private List<OHLCV> timeFrameData;
         public KillZones killZones;
 
+        public static IEnumerable<OHLCV> ReadCandlesStream(string filePath)
+        {
+            foreach (var line in File.ReadLines(filePath))
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
 
+                OHLCV? candle = null;
+
+                try
+                {
+                    candle = JsonSerializer.Deserialize<OHLCV>(line);
+                }
+                catch (JsonException ex)
+                {
+                    Debug.WriteLine($"JSON invalide ignoré : {ex.Message}");
+                }
+
+                if (candle != null)
+                    yield return candle;
+            }
+        }
         public MainWindow()
         {
             ///////////////////////////////
             //READ
             ///////////////////////////////
-            string jsonString = File.ReadAllText(filePath);
+            //string jsonString = File.ReadAllText(filePath);
 
 
             ///////////////////////////////
             //Normalizer
             ///////////////////////////////
-            m1Data = OHLCVNormalizer.Normalize(filePath)
-                .Where(o => o.Symbol == contractName)
-                .ToList();
+            m1Data = new List<OHLCV>();
+
+            foreach (var candle in ReadCandlesStream(filePath))
+            {
+                if (candle.Symbol != contractName)
+                    continue;
+
+                var normalized = OHLCVNormalizer.Normalize(candle);
+                m1Data.Add(normalized);
+            }
 
             timeFrameData = m1Data;
-
 
             ///////////////////////////////
             //Candle bus

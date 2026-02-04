@@ -15,24 +15,24 @@ namespace backtest
         public Header Hd { get; set; } = new Header();
 
         [JsonPropertyName("open")]
-        [JsonConverter(typeof(ParseStringToLongConverter))]
-        public long Open { get; set; }
+        [JsonConverter(typeof(ParseStringToDoubleConverter))]
+        public double Open { get; set; }
 
         [JsonPropertyName("high")]
-        [JsonConverter(typeof(ParseStringToLongConverter))]
-        public long High { get; set; }
+        [JsonConverter(typeof(ParseStringToDoubleConverter))]
+        public double High { get; set; }
 
         [JsonPropertyName("low")]
-        [JsonConverter(typeof(ParseStringToLongConverter))]
-        public long Low { get; set; }
+        [JsonConverter(typeof(ParseStringToDoubleConverter))]
+        public double Low { get; set; }
 
         [JsonPropertyName("close")]
-        [JsonConverter(typeof(ParseStringToLongConverter))]
-        public long Close { get; set; }
+        [JsonConverter(typeof(ParseStringToDoubleConverter))]
+        public double Close { get; set; }
 
         [JsonPropertyName("volume")]
-        [JsonConverter(typeof(ParseStringToDecimalConverter))]
-        public decimal Volume { get; set; }
+        [JsonConverter(typeof(ParseStringToDoubleConverter))]
+        public double Volume { get; set; }
 
         [JsonPropertyName("symbol")]
         public string Symbol { get; set; } = string.Empty;
@@ -55,7 +55,16 @@ namespace backtest
 
     internal class OHLCVNormalizer
     {
-        // Méthode pour lire un fichier et retourner tous les OHLCV normalisés
+        // NOUVELLE méthode : normalisation d'une seule bougie
+        public static OHLCV Normalize(OHLCV candle)
+        {
+            // 👉 mets ici ta logique de normalisation existante
+            // ex: conversion prix, timestamps, etc.
+
+            return candle;
+        }
+
+        // (optionnel) ancienne méthode si encore utilisée ailleurs
         public static List<OHLCV> Normalize(string filePath)
         {
             var ohlcvs = new List<OHLCV>();
@@ -68,7 +77,7 @@ namespace backtest
                     {
                         OHLCV? ohlcv = JsonSerializer.Deserialize<OHLCV>(line);
                         if (ohlcv != null)
-                            ohlcvs.Add(ohlcv);
+                            ohlcvs.Add(Normalize(ohlcv));
                     }
                     catch (JsonException ex)
                     {
@@ -108,27 +117,31 @@ namespace backtest
         }
     }
 
-    internal class ParseStringToLongConverter : JsonConverter<long>
+
+
+
+    internal class ParseStringToDoubleConverter : JsonConverter<double>
     {
-        public override long Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.String)
             {
                 var str = reader.GetString();
-                if (long.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
+                if (double.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
                     return value;
             }
             else if (reader.TokenType == JsonTokenType.Number)
             {
-                return reader.GetInt64();
+                return reader.GetDouble();
             }
 
-            throw new JsonException($"Impossible de convertir en long la valeur '{reader.GetString()}'");
+            throw new JsonException($"Impossible de convertir en double la valeur '{reader.GetString()}'");
         }
 
-        public override void Write(Utf8JsonWriter writer, long value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
         {
             writer.WriteStringValue(value.ToString(CultureInfo.InvariantCulture));
         }
     }
+
 }

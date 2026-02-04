@@ -16,10 +16,10 @@ namespace backtest
         public string Name { get; }
         public DateTime Start { get; }
         public DateTime End { get; }
-        public long High { get; }
-        public long Low { get; }
+        public double High { get; }
+        public double Low { get; }
 
-        public KillZone(String name, DateTime start, DateTime end, long high, long low)
+        public KillZone(String name, DateTime start, DateTime end, double high, double low)
             => (Name, Start, End, High, Low) = (name, start, end, high, low);
 
         public override string ToString()
@@ -91,8 +91,8 @@ namespace backtest
             DateTime end,
             string label = "")
         {
-            long high = long.MinValue;
-            long low = long.MaxValue;
+            double high = double.MinValue;
+            double low = double.MaxValue;
             bool found = false;
 
             foreach (var c in _candles)
@@ -153,8 +153,8 @@ namespace backtest
                         continue;
 
                     // Calculer le high/low de la zone
-                    long high = candlesInZone.Max(c => c.High);
-                    long low = candlesInZone.Min(c => c.Low);
+                    double high = candlesInZone.Max(c => c.High);
+                    double low = candlesInZone.Min(c => c.Low);
 
                     AddKillZoneRectangle(_model, effectiveStart, effectiveEnd, high, low, name);
 
