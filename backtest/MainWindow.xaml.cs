@@ -126,13 +126,22 @@ namespace backtest
 
 
 
-        // Méthode publique pour que l'enfant puisse l'appeler
+        // Méthodes publique pour que l'enfant puisse l'appeler
+
+        public void ZoomCandle(DateTime targetTimestamp)
+        {
+            Chart.ApplyZoomCandle(targetTimestamp);
+        }
+
         public void BacktestAction()
         {
             killZones.Show();
             DateTime targetTimestamp = new DateTime(2026, 1, 18, 2, 0, 0);
-            Chart.ApplyZoomCandle(targetTimestamp);
+            ZoomCandle(targetTimestamp);
+
+
         }
+
 
         public List<DateTime> getKillZones()
         {

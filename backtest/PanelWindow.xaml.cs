@@ -36,6 +36,14 @@ namespace backtest
         }
 
 
+        // Classe pour stocker l'élément avec sa date
+        public class KillZoneItem
+        {
+            public DateTime Timestamp { get; set; }
+            public string Texte => Timestamp.ToString("yyyy-MM-dd HH:mm");
+        }
+
+        // Dans ton bouton
         private void Killzone_Click(object sender, RoutedEventArgs e)
         {
             if (ParentWindow != null)
@@ -45,29 +53,33 @@ namespace backtest
 
             List<DateTime> timestamps = ParentWindow.getKillZones();
 
-
             if (timestamps == null || !timestamps.Any())
             {
                 Debug.WriteLine("Aucune KillZone disponible.");
                 return;
             }
 
+            ListeKillZones.Items.Clear(); // Pour éviter de dupliquer
+
             foreach (var ts in timestamps)
             {
-                var texte = $"{ts:yyyy-MM-dd HH:mm}";
-                Debug.WriteLine(texte);
-                ListeKillZones.Items.Add(texte);
+                var item = new KillZoneItem { Timestamp = ts };
+                ListeKillZones.Items.Add(item);
             }
 
+            // Pour afficher le texte dans la ListBox
+            ListeKillZones.DisplayMemberPath = "Texte";
         }
+
 
 
         private void ListeKillZones_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (ListeKillZones.SelectedItem != null)
+            if (ListeKillZones.SelectedItem is KillZoneItem selectedItem)
             {
-                string texte = ListeKillZones.SelectedItem.ToString();
-                Debug.WriteLine($"Double Clic sur : {texte}");
+                DateTime timeStamp = selectedItem.Timestamp;
+                Debug.WriteLine($"Date sélectionnée : {timeStamp}");
+                ParentWindow.ZoomCandle(timeStamp);
             }
         }
     }
