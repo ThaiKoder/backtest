@@ -130,7 +130,8 @@ namespace backtest
         public void BacktestAction()
         {
             killZones.Show();
-            Chart.ApplyZoomCandle();
+            DateTime targetTimestamp = new DateTime(2026, 1, 18, 2, 0, 0);
+            Chart.ApplyZoomCandle(targetTimestamp);
         }
 
         public List<DateTime> getKillZones()
@@ -141,7 +142,6 @@ namespace backtest
 
         private void backtest_Click(object sender, RoutedEventArgs e)
         {
-            Chart.ApplyZoomCandle();
             OpenPanel();
         }
 
@@ -241,11 +241,6 @@ namespace backtest
             Chart.UpdateData(busData, contractName);
 
             SessionTypeState = SessionType.RTH;
-        }
-
-        private void findcandle_Click(object sender, RoutedEventArgs e)
-        {
-            Chart.ApplyZoomCandle();
         }
     }
 }

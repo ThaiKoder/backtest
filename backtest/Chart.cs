@@ -162,7 +162,7 @@ namespace backtest
             // 4️ Rafraichir le graphique
             Model.InvalidatePlot(true);
         }
-        public void ApplyZoomCandle()
+        public void ApplyZoomCandle(DateTime targetTimestamp)
         {
             if (_candleSeries.Items.Count == 0)
                 return;
@@ -170,7 +170,7 @@ namespace backtest
             int visibleCandles = 200; 
 
             // Timestamp cible
-            DateTime targetTimestamp = new DateTime(2026, 1, 18, 2, 0, 0);
+            //DateTime targetTimestamp = new DateTime(2026, 1, 18, 2, 0, 0);
             double targetX = DateTimeAxis.ToDouble(targetTimestamp);
 
             // Trouver la bougie cible la plus proche du timestamp

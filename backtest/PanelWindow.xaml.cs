@@ -52,13 +52,11 @@ namespace backtest
                 return;
             }
 
-            int count = 1;
             foreach (var ts in timestamps)
             {
                 var texte = $"{ts:yyyy-MM-dd HH:mm}";
                 Debug.WriteLine(texte);
                 ListeKillZones.Items.Add(texte);
-                count++;
             }
 
         }
