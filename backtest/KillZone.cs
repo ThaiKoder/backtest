@@ -117,23 +117,45 @@ namespace backtest
             if (_candles == null || !_candles.Any())
                 return;
 
-            // Début et fin automatique à partir des timestamps
-            var start = _candles.First().Hd.Timestamp;  // premier jour
-            var end = _candles.Last().Hd.Timestamp;     // dernier jour
+            // Début et fin des bougies
+            var firstCandle = _candles.First().Hd.Timestamp;
+            var lastCandle = _candles.Last().Hd.Timestamp;
 
-            for (var day = start; day <= end; day = day.AddDays(1))
+            // Boucles sur chaque jour
+            var startDate = firstCandle.Date;
+            var endDate = lastCandle.Date;
+
+            for (var day = startDate; day <= endDate; day = day.AddDays(1))
             {
                 foreach (var (name, from, to) in KillZoneHours)
                 {
-                    var zone = CalculateZone(
-                        _model,
-                        day.Add(from),
-                        day.Add(to),
-                        name
-                    );
+                    var zoneStart = day + from;
+                    var zoneEnd = day + to;
+
+                    // Vérifier que la zone chevauche la période des bougies
+                    if (zoneEnd < firstCandle || zoneStart > lastCandle)
+                        continue; // zone complètement en dehors → ignorer
+
+                    // Ajuster la zone pour qu'elle reste dans les bougies existantes
+                    var effectiveStart = zoneStart < firstCandle ? firstCandle : zoneStart;
+                    var effectiveEnd = zoneEnd > lastCandle ? lastCandle : zoneEnd;
+
+                    // Extraire les bougies de la zone une seule fois
+                    var candlesInZone = _candles
+                        .Where(c => c.Hd.Timestamp >= effectiveStart && c.Hd.Timestamp <= effectiveEnd)
+                        .ToList();
+
+                    if (!candlesInZone.Any())
+                        continue;
+
+                    // Calculer le high/low de la zone
+                    long high = candlesInZone.Max(c => c.High);
+                    long low = candlesInZone.Min(c => c.Low);
+
+                    AddKillZoneRectangle(_model, effectiveStart, effectiveEnd, high, low, name);
 
                     Debug.WriteLine($"{day:yyyy-MM-dd} {name}");
-                    Debug.WriteLine(zone);
+                    Debug.WriteLine($"KillZone: {effectiveStart:HH:mm}-{effectiveEnd:HH:mm}, High={high}, Low={low}");
                 }
             }
         }
