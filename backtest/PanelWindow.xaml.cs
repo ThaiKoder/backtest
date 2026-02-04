@@ -19,9 +19,26 @@ namespace backtest
     /// </summary>
     public partial class PanelWindow : Window
     {
+        public class ChildClickData
+        {
+            public int Index { get; set; }
+        }
+
         public PanelWindow()
         {
             InitializeComponent();
+        }
+
+
+        private void Killzone_Click(object sender, RoutedEventArgs e)
+        {
+            var data = new ChildClickData
+            {
+                Index = 3
+            };
+
+            //Clicked?.Invoke(this, data);
+
         }
     }
 }

@@ -138,6 +138,7 @@ namespace backtest
             var killZones = new KillZones(timeFrameData);
 
             var zone = killZones.CalculateZone(
+                Chart.Model,
                 DateTime.Parse("2026-01-18T23:02:00.000000000Z"),
                 DateTime.Parse("2026-01-18T23:29:00.000000000Z")
 

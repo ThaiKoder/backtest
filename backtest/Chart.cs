@@ -146,7 +146,7 @@ namespace backtest
             int visibleCandles = 200; 
 
             // Timestamp cible
-            DateTime targetTimestamp = new DateTime(2026, 1, 23, 20, 14, 0);
+            DateTime targetTimestamp = new DateTime(2026, 1, 18, 2, 0, 0);
             double targetX = DateTimeAxis.ToDouble(targetTimestamp);
 
             // Trouver la bougie cible la plus proche du timestamp

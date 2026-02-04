@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         Title="PanelWindow" Height="450" Width="800">
     <StackPanel Margin="10">
-        <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Center"/>
+        <Button Content="KillZone" Click="Killzone_Click"   Command="{Binding ChildClickCommand}"
+        CommandParameter="{Binding SelectedData}"/>
     </StackPanel>
 </Window>

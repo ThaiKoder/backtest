@@ -1,4 +1,7 @@
-﻿using System;
+﻿using OxyPlot;
+using OxyPlot.Annotations;
+using OxyPlot.Axes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,10 +28,35 @@ namespace backtest
         }
     }
 
+
+
     public class KillZones
     {
         private readonly List<OHLCV> _candles;
 
+
+        public static void AddKillZoneRectangle(PlotModel model, DateTime Start, DateTime End, double High, double Low)
+        {
+            var rectangle = new RectangleAnnotation
+            {
+                // Axe X = DateTime
+                MinimumX = DateTimeAxis.ToDouble(Start),
+                MaximumX = DateTimeAxis.ToDouble(End),
+
+                // Axe Y = prix
+                MinimumY = Low,
+                MaximumY = High,
+
+                // Style
+                Fill = OxyColor.FromAColor(80, OxyColors.White), // transparent
+                Stroke = OxyColors.White,
+                StrokeThickness = 1,
+
+                Layer = AnnotationLayer.BelowSeries // derrière les bougies
+            };
+
+            model.Annotations.Add(rectangle);
+        }
         public KillZones(IEnumerable<OHLCV> candles)
         {
             _candles = candles.ToList();
@@ -37,7 +65,7 @@ namespace backtest
         /// <summary>
         /// Calcule la Kill Zone entre deux timestamps
         /// </summary>
-        public KillZone CalculateZone(DateTime start, DateTime end)
+        public KillZone CalculateZone(PlotModel model, DateTime start, DateTime end)
         {
             var subset = _candles
                 .Where(c => c.Hd.Timestamp >= start && c.Hd.Timestamp <= end)
@@ -49,6 +77,7 @@ namespace backtest
             long high = subset.Max(c => c.High);
             long low = subset.Min(c => c.Low);
 
+            AddKillZoneRectangle(model, start, end, high, low);
             return new KillZone(start, end, high, low);
         }
     }
