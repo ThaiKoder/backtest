@@ -36,14 +36,16 @@ namespace backtest
         }
 
 
-        // Classe pour stocker l'élément avec sa date
+        // Classe pour stocker l'élément de la ListBox avec la zone complète
         public class KillZoneItem
         {
-            public DateTime Timestamp { get; set; }
-            public string Texte => Timestamp.ToString("yyyy-MM-dd HH:mm");
+            public KillZone Zone { get; set; }
+
+            // Texte à afficher dans la ListBox
+            public string Texte => $"{Zone.Start:yyyy-MM-dd HH:mm}";
         }
 
-        // Dans ton bouton
+        // Lors du clic sur le bouton
         private void Killzone_Click(object sender, RoutedEventArgs e)
         {
             if (ParentWindow != null)
@@ -51,36 +53,39 @@ namespace backtest
                 ParentWindow.BacktestAction();
             }
 
-            List<DateTime> timestamps = ParentWindow.getKillZones();
+            // Récupérer toutes les zones complètes
+            List<KillZone> zones = ParentWindow.getKillZones();
 
-            if (timestamps == null || !timestamps.Any())
+            if (zones == null || !zones.Any())
             {
                 Debug.WriteLine("Aucune KillZone disponible.");
                 return;
             }
 
-            ListeKillZones.Items.Clear(); // Pour éviter de dupliquer
+            ListeKillZones.Items.Clear(); // éviter les doublons
 
-            foreach (var ts in timestamps)
+            foreach (var zone in zones)
             {
-                var item = new KillZoneItem { Timestamp = ts };
+                var item = new KillZoneItem { Zone = zone };
                 ListeKillZones.Items.Add(item);
             }
 
-            // Pour afficher le texte dans la ListBox
+            // Afficher le texte dans la ListBox
             ListeKillZones.DisplayMemberPath = "Texte";
         }
 
-
-
+        // Double-clic sur un élément de la ListBox
         private void ListeKillZones_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (ListeKillZones.SelectedItem is KillZoneItem selectedItem)
             {
-                DateTime timeStamp = selectedItem.Timestamp;
-                Debug.WriteLine($"Date sélectionnée : {timeStamp}");
-                ParentWindow.ZoomCandle(timeStamp);
+                KillZone zone = selectedItem.Zone;
+                Debug.WriteLine($"Zone sélectionnée : Start={zone.Start}, End={zone.End}, High={zone.High}, Low={zone.Low}");
+
+                // Exemple : zoom sur la première bougie de la zone
+                ParentWindow.ZoomCandle(zone.Start);
             }
         }
+
     }
 }

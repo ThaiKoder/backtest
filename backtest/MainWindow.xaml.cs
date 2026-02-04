@@ -143,9 +143,9 @@ namespace backtest
         }
 
 
-        public List<DateTime> getKillZones()
+        public List<KillZone> getKillZones()
         {
-            return killZones.FirstCandleTimestamps;
+            return killZones.Zones;
         }
 
 

@@ -31,7 +31,7 @@ namespace backtest
     public class KillZones
     {
         private readonly List<OHLCV> _candles;
-        public List<DateTime> FirstCandleTimestamps { get; } = new List<DateTime>();
+        public List<KillZone> Zones { get; } = new List<KillZone>();
         private readonly PlotModel _model;
 
         private static readonly (string name, TimeSpan start, TimeSpan end)[] KillZoneHours =
@@ -109,8 +109,8 @@ namespace backtest
             if (!found)
                 throw new InvalidOperationException("Aucune bougie trouvée dans la plage.");
 
-            AddKillZoneRectangle(model, start, end, high, low, label);
-            return new KillZone(start, end, high, low);
+            var zone = new KillZone(start, end, high, low);
+            return zone;
         }
 
         public void Show()
@@ -125,6 +125,8 @@ namespace backtest
             // Boucles sur chaque jour
             var startDate = firstCandle.Date;
             var endDate = lastCandle.Date;
+
+            Zones.Clear();
 
             for (var day = startDate; day <= endDate; day = day.AddDays(1))
             {
@@ -149,14 +151,14 @@ namespace backtest
                     if (!candlesInZone.Any())
                         continue;
 
-                    // Stocker le timestamp de la première bougie de la zone
-                    FirstCandleTimestamps.Add(candlesInZone.First().Hd.Timestamp);
-
                     // Calculer le high/low de la zone
                     long high = candlesInZone.Max(c => c.High);
                     long low = candlesInZone.Min(c => c.Low);
 
                     AddKillZoneRectangle(_model, effectiveStart, effectiveEnd, high, low, name);
+
+                    var zone = new KillZone(effectiveStart, effectiveEnd, high, low);
+                    Zones.Add(zone);
 
                     Debug.WriteLine($"{day:yyyy-MM-dd} {name}");
                     Debug.WriteLine($"KillZone: {effectiveStart:HH:mm}-{effectiveEnd:HH:mm}, High={high}, Low={low}");
