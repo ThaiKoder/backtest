@@ -10,142 +10,127 @@ using System.Reflection.Emit;
 namespace backtest
 {
 
-    public class KillZone
+    public sealed class KillZone
     {
-        public DateTime Start { get; private set; }
-        public DateTime End { get; private set; }
-        public long High { get; private set; }
-        public long Low { get; private set; }
+        public DateTime Start { get; }
+        public DateTime End { get; }
+        public long High { get; }
+        public long Low { get; }
 
         public KillZone(DateTime start, DateTime end, long high, long low)
-        {
-            Start = start;
-            End = end;
-            High = high;
-            Low = low;
-        }
+            => (Start, End, High, Low) = (start, end, high, low);
 
         public override string ToString()
-        {
-            return $"KillZone: {Start:yyyy-MM-dd HH:mm:ss} -> {End:yyyy-MM-dd HH:mm:ss}, High={High}, Low={Low}";
-        }
+            => $"KillZone: {Start:yyyy-MM-dd HH:mm:ss} -> {End:yyyy-MM-dd HH:mm:ss}, High={High}, Low={Low}";
     }
+
 
 
 
     public class KillZones
     {
         private readonly List<OHLCV> _candles;
-        private readonly (string Name, TimeSpan Start, TimeSpan End)[] KillZoneHours =
-{
-            ("Asia",   new TimeSpan(0, 0, 0),  new TimeSpan(3, 0, 0)),
-            ("London", new TimeSpan(7, 0, 0),  new TimeSpan(10, 0, 0)),
-            ("NY AM",  new TimeSpan(13, 0, 0), new TimeSpan(16, 0, 0))
+        private readonly PlotModel _model;
+
+        private static readonly (string name, TimeSpan start, TimeSpan end)[] KillZoneHours =
+        {
+            ("Asia",   new(0, 0, 0),  new(3, 0, 0)),
+            ("London", new(7, 0, 0),  new(10, 0, 0)),
+            ("NY AM",  new(13, 0, 0), new(16, 0, 0))
         };
+
+        public KillZones(PlotModel model, IEnumerable<OHLCV> candles)
+        {
+            _model = model;
+            _candles = candles as List<OHLCV> ?? candles.ToList();
+        }
 
         public static void AddKillZoneRectangle(
             PlotModel model,
-            DateTime Start,
-            DateTime End,
-            double High,
-            double Low,
-            string labelText)
+            DateTime start,
+            DateTime end,
+            double high,
+            double low,
+            string label)
         {
-            var xStart = DateTimeAxis.ToDouble(Start);
-            var xEnd = DateTimeAxis.ToDouble(End);
-            var xCenter = (xStart + xEnd) / 2.0;
+            double x0 = DateTimeAxis.ToDouble(start);
+            double x1 = DateTimeAxis.ToDouble(end);
+            double xc = (x0 + x1) * 0.5;
 
-            // Rectangle
-            var rectangle = new RectangleAnnotation
+            model.Annotations.Add(new RectangleAnnotation
             {
-                MinimumX = xStart,
-                MaximumX = xEnd,
-                MinimumY = Low,
-                MaximumY = High,
-
+                MinimumX = x0,
+                MaximumX = x1,
+                MinimumY = low,
+                MaximumY = high,
                 Fill = OxyColor.FromAColor(150, OxyColors.White),
                 Layer = AnnotationLayer.BelowSeries
-            };
+            });
 
-            model.Annotations.Add(rectangle);
-
-            // Label sous le rectangle
-            var label = new TextAnnotation
+            model.Annotations.Add(new TextAnnotation
             {
-                Text = labelText,
-
-                // Position en coordonnées DATA
-                TextPosition = new DataPoint(xCenter, Low),
-
-                // Alignement
+                Text = label,
+                TextPosition = new DataPoint(xc, low),
                 TextHorizontalAlignment = HorizontalAlignment.Center,
                 TextVerticalAlignment = VerticalAlignment.Top,
-
-                // Décalage en PIXELS (vers le bas)
                 Offset = new ScreenVector(0, 10),
-
                 Stroke = OxyColors.Undefined,
                 TextColor = OxyColors.White,
                 FontSize = 11,
-
                 Layer = AnnotationLayer.AboveSeries
-            };
-
-            model.Annotations.Add(label);
+            });
         }
 
-        public KillZones(IEnumerable<OHLCV> candles)
+
+        public KillZone CalculateZone(
+            PlotModel model,
+            DateTime start,
+            DateTime end,
+            string label = "")
         {
-            _candles = candles.ToList();
-        }
+            long high = long.MinValue;
+            long low = long.MaxValue;
+            bool found = false;
 
-        /// <summary>
-        /// Calcule la Kill Zone entre deux timestamps
-        /// </summary>
-        public KillZone CalculateZone(PlotModel model, DateTime start, DateTime end, string label = "")
-        {
-            var subset = _candles
-                .Where(c => c.Hd.Timestamp >= start && c.Hd.Timestamp <= end)
-                .ToList();
+            foreach (var c in _candles)
+            {
+                var t = c.Hd.Timestamp;
+                if (t < start || t > end)
+                    continue;
 
-            if (!subset.Any())
-                throw new Exception("Aucune bougie trouvée entre ces timestamps.");
+                found = true;
 
-            long high = subset.Max(c => c.High);
-            long low = subset.Min(c => c.Low);
+                if (c.High > high) high = c.High;
+                if (c.Low < low) low = c.Low;
+            }
+
+            if (!found)
+                throw new InvalidOperationException("Aucune bougie trouvée dans la plage.");
 
             AddKillZoneRectangle(model, start, end, high, low, label);
             return new KillZone(start, end, high, low);
         }
 
-
-        public void Show(PlotModel model, List<OHLCV> timeFrameData)
+        public void Show()
         {
-            var killZones = new KillZones(timeFrameData);
+            var start = new DateTime(2026, 1, 19, 0, 0, 0, DateTimeKind.Utc);
+            var end = new DateTime(2026, 1, 23, 0, 0, 0, DateTimeKind.Utc);
 
-            DateTime startDate = new DateTime(2026, 01, 19, 0, 0, 0, DateTimeKind.Utc);
-            DateTime endDate = new DateTime(2026, 01, 23, 0, 0, 0, DateTimeKind.Utc);
-
-            for (DateTime day = startDate; day <= endDate; day = day.AddDays(1))
+            for (var day = start; day <= end; day = day.AddDays(1))
             {
-                foreach (var kz in KillZoneHours)
+                foreach (var (name, from, to) in KillZoneHours)
                 {
-                    String label = kz.Name;
-                    DateTime zoneStart = day.Add(kz.Start);
-                    DateTime zoneEnd = day.Add(kz.End);
-
-                    var zone = killZones.CalculateZone(
-                        model,
-                        zoneStart,
-                        zoneEnd,
-                        label
+                    var zone = CalculateZone(
+                        _model,
+                        day.Add(from),
+                        day.Add(to),
+                        name
                     );
 
-                    Debug.WriteLine($"{day:yyyy-MM-dd} {kz.Name}");
+                    Debug.WriteLine($"{day:yyyy-MM-dd} {name}");
                     Debug.WriteLine(zone);
                 }
             }
-
         }
     }
 }

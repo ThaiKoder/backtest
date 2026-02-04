@@ -139,8 +139,8 @@ namespace backtest
 
         private void backtest_Click(object sender, RoutedEventArgs e)
         {
-            KillZones killZones = new KillZones(timeFrameData);
-            killZones.Show(Chart.Model, timeFrameData);
+            KillZones killZones = new KillZones(Chart.Model, timeFrameData);
+            killZones.Show();
             Chart.ApplyZoomCandle();
             OpenPanel();
         }
