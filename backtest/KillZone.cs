@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Reflection.Metadata;
 
 namespace backtest
 {
@@ -113,8 +114,12 @@ namespace backtest
 
         public void Show()
         {
-            var start = new DateTime(2026, 1, 19, 0, 0, 0, DateTimeKind.Utc);
-            var end = new DateTime(2026, 1, 23, 0, 0, 0, DateTimeKind.Utc);
+            if (_candles == null || !_candles.Any())
+                return;
+
+            // Début et fin automatique à partir des timestamps
+            var start = _candles.First().Hd.Timestamp;  // premier jour
+            var end = _candles.Last().Hd.Timestamp;     // dernier jour
 
             for (var day = start; day <= end; day = day.AddDays(1))
             {
