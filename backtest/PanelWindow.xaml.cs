@@ -20,29 +20,31 @@ namespace backtest
     /// </summary>
     public partial class PanelWindow : Window
     {
+
+        public MainWindow ParentWindow { get; set; }
+
         public class ChildClickData
         {
             public int Index { get; set; }
         }
 
-        public PanelWindow()
+
+        public PanelWindow(MainWindow parent)
         {
             InitializeComponent();
+            ParentWindow = parent;
         }
 
 
         private void Killzone_Click(object sender, RoutedEventArgs e)
         {
-            var data = new ChildClickData
+            //string nouveauTexte = "KillZone " + (ListeKillZones.Items.Count + 1);
+            //ListeKillZones.Items.Add(nouveauTexte);
+            if (ParentWindow != null)
             {
-                Index = 3
-            };
-
-            //Clicked?.Invoke(this, data);
-
-            string nouveauTexte = "KillZone " + (ListeKillZones.Items.Count + 1);
-            ListeKillZones.Items.Add(nouveauTexte);
-
+                // Appeler la méthode du parent
+                ParentWindow.BacktestAction();
+            }
         }
 
         private void ListeKillZones_MouseDoubleClick(object sender, MouseButtonEventArgs e)

@@ -87,39 +87,51 @@ namespace backtest
         }
 
 
+        private PanelWindow _panel; // champ pour garder la fenêtre enfant
 
-
-
-
-        private PanelWindow _panel;
-
-        private void OpenPanel()
+        public void OpenPanel()
         {
+            // Si le panel est déjà ouvert, on le ramène au premier plan
             if (_panel != null)
             {
                 _panel.Activate();
                 return;
             }
 
-            _panel = new PanelWindow
+            // Crée une nouvelle instance du panel, en passant "this" pour référence parent
+            _panel = new PanelWindow(this)
             {
-                Owner = this // 🔗 lien minimal
+                Owner = this // lien minimal pour propriété Owner
             };
 
+            // Quand le panel est fermé, on libère la référence
             _panel.Closed += (s, e) => _panel = null;
+
+            // Affiche le panel
             _panel.Show();
         }
 
 
 
+        private void OpenPanelWindow_Click(object sender, RoutedEventArgs e)
+        {
+            PanelWindow panel = new PanelWindow(this); // on passe "this" au constructeur
+            panel.Show();
+        }
 
 
+
+        // Méthode publique pour que l'enfant puisse l'appeler
+        public void BacktestAction()
+        {
+            KillZones killZones = new KillZones(Chart.Model, timeFrameData);
+            killZones.Show();
+            Chart.ApplyZoomCandle();
+        }
 
 
         private void backtest_Click(object sender, RoutedEventArgs e)
         {
-            KillZones killZones = new KillZones(Chart.Model, timeFrameData);
-            killZones.Show();
             Chart.ApplyZoomCandle();
             OpenPanel();
         }
