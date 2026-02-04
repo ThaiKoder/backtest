@@ -35,9 +35,9 @@ namespace backtest
 
         private static readonly (string name, TimeSpan start, TimeSpan end)[] KillZoneHours =
         {
-            ("Asia",   new(0, 0, 0),  new(3, 0, 0)),
+            ("Asia",   new(1, 0, 0),  new(5, 0, 0)),
             ("London", new(7, 0, 0),  new(10, 0, 0)),
-            ("NY AM",  new(13, 0, 0), new(16, 0, 0))
+            ("NY AM",  new(13, 30, 0), new(16, 0, 0))
         };
 
         public KillZones(PlotModel model, IEnumerable<OHLCV> candles)
