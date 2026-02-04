@@ -4,6 +4,7 @@ using OxyPlot.Axes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 
 namespace backtest
 {
@@ -34,29 +35,57 @@ namespace backtest
     {
         private readonly List<OHLCV> _candles;
 
-
-        public static void AddKillZoneRectangle(PlotModel model, DateTime Start, DateTime End, double High, double Low)
+        public static void AddKillZoneRectangle(
+            PlotModel model,
+            DateTime Start,
+            DateTime End,
+            double High,
+            double Low,
+            string labelText)
         {
+            var xStart = DateTimeAxis.ToDouble(Start);
+            var xEnd = DateTimeAxis.ToDouble(End);
+            var xCenter = (xStart + xEnd) / 2.0;
+
+            // Rectangle
             var rectangle = new RectangleAnnotation
             {
-                // Axe X = DateTime
-                MinimumX = DateTimeAxis.ToDouble(Start),
-                MaximumX = DateTimeAxis.ToDouble(End),
-
-                // Axe Y = prix
+                MinimumX = xStart,
+                MaximumX = xEnd,
                 MinimumY = Low,
                 MaximumY = High,
 
-                // Style
-                Fill = OxyColor.FromAColor(80, OxyColors.White), // transparent
-                Stroke = OxyColors.White,
-                StrokeThickness = 1,
-
-                Layer = AnnotationLayer.BelowSeries // derrière les bougies
+                Fill = OxyColor.FromAColor(150, OxyColors.White),
+                Layer = AnnotationLayer.BelowSeries
             };
 
             model.Annotations.Add(rectangle);
+
+            // Label sous le rectangle
+            var label = new TextAnnotation
+            {
+                Text = labelText,
+
+                // Position en coordonnées DATA
+                TextPosition = new DataPoint(xCenter, Low),
+
+                // Alignement
+                TextHorizontalAlignment = HorizontalAlignment.Center,
+                TextVerticalAlignment = VerticalAlignment.Top,
+
+                // Décalage en PIXELS (vers le bas)
+                Offset = new ScreenVector(0, 10),
+
+                Stroke = OxyColors.Undefined,
+                TextColor = OxyColors.White,
+                FontSize = 11,
+
+                Layer = AnnotationLayer.AboveSeries
+            };
+
+            model.Annotations.Add(label);
         }
+
         public KillZones(IEnumerable<OHLCV> candles)
         {
             _candles = candles.ToList();
@@ -65,7 +94,7 @@ namespace backtest
         /// <summary>
         /// Calcule la Kill Zone entre deux timestamps
         /// </summary>
-        public KillZone CalculateZone(PlotModel model, DateTime start, DateTime end)
+        public KillZone CalculateZone(PlotModel model, DateTime start, DateTime end, string label = "")
         {
             var subset = _candles
                 .Where(c => c.Hd.Timestamp >= start && c.Hd.Timestamp <= end)
@@ -77,7 +106,7 @@ namespace backtest
             long high = subset.Max(c => c.High);
             long low = subset.Min(c => c.Low);
 
-            AddKillZoneRectangle(model, start, end, high, low);
+            AddKillZoneRectangle(model, start, end, high, low, label);
             return new KillZone(start, end, high, low);
         }
     }

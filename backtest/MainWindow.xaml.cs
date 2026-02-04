@@ -153,13 +153,15 @@ namespace backtest
             {
                 foreach (var kz in KillZoneHours)
                 {
+                    String label = kz.Name;
                     DateTime zoneStart = day.Add(kz.Start);
                     DateTime zoneEnd = day.Add(kz.End);
 
                     var zone = killZones.CalculateZone(
                         Chart.Model,
                         zoneStart,
-                        zoneEnd
+                        zoneEnd,
+                        label
                     );
 
                     Debug.WriteLine($"{day:yyyy-MM-dd} {kz.Name}");
