@@ -87,28 +87,7 @@ namespace backtest
         }
 
 
-        private bool IsRTH(DateTime t) //UTC time
-        {
-            if (t.DayOfWeek == DayOfWeek.Saturday || t.DayOfWeek == DayOfWeek.Sunday)
-                return false;
 
-            var time = t.TimeOfDay;
-            return time >= new TimeSpan(14, 30, 0)
-                && time <= new TimeSpan(21, 0, 0);
-        }
-
-
-        private bool IsETH(DateTime t) // UTC time
-        {
-            if (t.DayOfWeek == DayOfWeek.Saturday || t.DayOfWeek == DayOfWeek.Sunday)
-                return false;
-
-            var time = t.TimeOfDay;
-
-            // session qui traverse minuit
-            return time >= new TimeSpan(23, 0, 0)
-                || time < new TimeSpan(22, 0, 0);
-        }
 
 
 
@@ -218,7 +197,7 @@ namespace backtest
                 return;
 
             timeFrameData = m1Data
-                .Where(c => IsETH(c.Hd.Timestamp))
+                .Where(c => Chart.IsETH(c.Hd.Timestamp))
                 .ToList();
 
             var busData = _candleBus.BuildFromM1(timeFrameData, (TimeFrame)TimesFrameState);
@@ -234,7 +213,7 @@ namespace backtest
                 return;
 
             timeFrameData = m1Data
-                .Where(c => IsRTH(c.Hd.Timestamp))
+                .Where(c => Chart.IsRTH(c.Hd.Timestamp))
                 .ToList();
 
             var busData = _candleBus.BuildFromM1(timeFrameData, (TimeFrame)TimesFrameState);

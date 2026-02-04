@@ -62,6 +62,30 @@ namespace backtest
             Model.Axes.Add(_yAxis);
         }
 
+
+        public bool IsRTH(DateTime t) //UTC time
+        {
+            if (t.DayOfWeek == DayOfWeek.Saturday || t.DayOfWeek == DayOfWeek.Sunday)
+                return false;
+
+            var time = t.TimeOfDay;
+            return time >= new TimeSpan(14, 30, 0)
+                && time <= new TimeSpan(21, 0, 0);
+        }
+
+
+        public bool IsETH(DateTime t) // UTC time
+        {
+            if (t.DayOfWeek == DayOfWeek.Saturday || t.DayOfWeek == DayOfWeek.Sunday)
+                return false;
+
+            var time = t.TimeOfDay;
+
+            // session qui traverse minuit
+            return time >= new TimeSpan(23, 0, 0)
+                || time < new TimeSpan(22, 0, 0);
+        }
+
         private void CreateSeries()
         {
             _candleSeries = new CandleStickSeries
