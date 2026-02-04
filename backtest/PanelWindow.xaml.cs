@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,6 +40,18 @@ namespace backtest
 
             //Clicked?.Invoke(this, data);
 
+            string nouveauTexte = "KillZone " + (ListeKillZones.Items.Count + 1);
+            ListeKillZones.Items.Add(nouveauTexte);
+
+        }
+
+        private void ListeKillZones_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (ListeKillZones.SelectedItem != null)
+            {
+                string texte = ListeKillZones.SelectedItem.ToString();
+                Debug.WriteLine($"Double Clic sur : {texte}");
+            }
         }
     }
 }

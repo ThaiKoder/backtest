@@ -9,5 +9,7 @@
     <StackPanel Margin="10">
         <Button Content="KillZone" Click="Killzone_Click"   Command="{Binding ChildClickCommand}"
         CommandParameter="{Binding SelectedData}"/>
+        <ListBox x:Name="ListeKillZones" Margin="0,10,0,0" 
+                 MouseDoubleClick="ListeKillZones_MouseDoubleClick"/>
     </StackPanel>
 </Window>
