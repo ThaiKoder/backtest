@@ -13,13 +13,14 @@ namespace backtest
 
     public sealed class KillZone
     {
+        public string Name { get; }
         public DateTime Start { get; }
         public DateTime End { get; }
         public long High { get; }
         public long Low { get; }
 
-        public KillZone(DateTime start, DateTime end, long high, long low)
-            => (Start, End, High, Low) = (start, end, high, low);
+        public KillZone(String name, DateTime start, DateTime end, long high, long low)
+            => (Name, Start, End, High, Low) = (name, start, end, high, low);
 
         public override string ToString()
             => $"KillZone: {Start:yyyy-MM-dd HH:mm:ss} -> {End:yyyy-MM-dd HH:mm:ss}, High={High}, Low={Low}";
@@ -109,7 +110,7 @@ namespace backtest
             if (!found)
                 throw new InvalidOperationException("Aucune bougie trouvée dans la plage.");
 
-            var zone = new KillZone(start, end, high, low);
+            var zone = new KillZone(label, start, end, high, low);
             return zone;
         }
 
@@ -157,7 +158,7 @@ namespace backtest
 
                     AddKillZoneRectangle(_model, effectiveStart, effectiveEnd, high, low, name);
 
-                    var zone = new KillZone(effectiveStart, effectiveEnd, high, low);
+                    var zone = new KillZone(name, effectiveStart, effectiveEnd, high, low);
                     Zones.Add(zone);
 
                     Debug.WriteLine($"{day:yyyy-MM-dd} {name}");

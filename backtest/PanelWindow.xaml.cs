@@ -72,6 +72,10 @@ namespace backtest
 
             // Afficher le texte dans la ListBox
             ListeKillZones.DisplayMemberPath = "Texte";
+
+            Debug.WriteLine("_________________________________");
+
+            ParentWindow.ConceptTestKillZone();
         }
 
         // Double-clic sur un élément de la ListBox

@@ -16,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static backtest.PanelWindow;
 using static System.Net.Mime.MediaTypeNames;
 
 
@@ -147,6 +148,50 @@ namespace backtest
         {
             return killZones.Zones;
         }
+
+
+        public void ConceptTestKillZone()
+        {
+            List<KillZone> zones = getKillZones();
+
+            if (zones == null || !zones.Any())
+            {
+                Debug.WriteLine("Aucune KillZone disponible.");
+                return;
+            }
+
+            int totalValides = 0;
+            int totalInvalides = 0;
+
+            // Grouper par jour
+            var zonesParJour = zones.GroupBy(z => z.Start.Date);
+
+            foreach (var jourGroup in zonesParJour)
+            {
+                var day = jourGroup.Key;
+                var london = jourGroup.FirstOrDefault(z => z.Name == "London");
+                var nyam = jourGroup.FirstOrDefault(z => z.Name == "NY AM");
+
+                if (london != null && nyam != null)
+                {
+                    bool condition = london.Low < nyam.Low;
+
+                    if (condition)
+                        totalValides++;
+                    else
+                        totalInvalides++;
+
+                    Debug.WriteLine($"{day:yyyy-MM-dd} : London Low={london.Low}, NY AM Low={nyam.Low} => {(condition ? "Valide" : "Invalide")}");
+                }
+                else
+                {
+                    Debug.WriteLine($"{day:yyyy-MM-dd} : Zones manquantes pour London ou NY AM");
+                }
+            }
+
+            Debug.WriteLine($"Total valides : {totalValides}, Total invalides : {totalInvalides}");
+        }
+
 
 
         private void backtest_Click(object sender, RoutedEventArgs e)
