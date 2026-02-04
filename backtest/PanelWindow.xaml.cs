@@ -38,14 +38,31 @@ namespace backtest
 
         private void Killzone_Click(object sender, RoutedEventArgs e)
         {
-            //string nouveauTexte = "KillZone " + (ListeKillZones.Items.Count + 1);
-            //ListeKillZones.Items.Add(nouveauTexte);
             if (ParentWindow != null)
             {
-                // Appeler la méthode du parent
                 ParentWindow.BacktestAction();
             }
+
+            List<DateTime> timestamps = ParentWindow.getKillZones();
+
+
+            if (timestamps == null || !timestamps.Any())
+            {
+                Debug.WriteLine("Aucune KillZone disponible.");
+                return;
+            }
+
+            int count = 1;
+            foreach (var ts in timestamps)
+            {
+                var texte = $"{ts:yyyy-MM-dd HH:mm}";
+                Debug.WriteLine(texte);
+                ListeKillZones.Items.Add(texte);
+                count++;
+            }
+
         }
+
 
         private void ListeKillZones_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {

@@ -31,6 +31,7 @@ namespace backtest
     public class KillZones
     {
         private readonly List<OHLCV> _candles;
+        public List<DateTime> FirstCandleTimestamps { get; } = new List<DateTime>();
         private readonly PlotModel _model;
 
         private static readonly (string name, TimeSpan start, TimeSpan end)[] KillZoneHours =
@@ -147,6 +148,9 @@ namespace backtest
 
                     if (!candlesInZone.Any())
                         continue;
+
+                    // Stocker le timestamp de la première bougie de la zone
+                    FirstCandleTimestamps.Add(candlesInZone.First().Hd.Timestamp);
 
                     // Calculer le high/low de la zone
                     long high = candlesInZone.Max(c => c.High);

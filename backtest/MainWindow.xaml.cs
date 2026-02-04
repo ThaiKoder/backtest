@@ -53,6 +53,7 @@ namespace backtest
         private SessionType SessionTypeState = SessionType.RTH;
         private List<OHLCV> m1Data;
         private List<OHLCV> timeFrameData;
+        public KillZones killZones;
 
 
         public MainWindow()
@@ -84,6 +85,10 @@ namespace backtest
             ///////////////////////////////
             Chart = new Chart(m1Data, contractName);
             DataContext = this;
+
+            //KillZones
+            killZones = new KillZones(Chart.Model, timeFrameData);
+
         }
 
 
@@ -124,9 +129,13 @@ namespace backtest
         // Méthode publique pour que l'enfant puisse l'appeler
         public void BacktestAction()
         {
-            KillZones killZones = new KillZones(Chart.Model, timeFrameData);
             killZones.Show();
             Chart.ApplyZoomCandle();
+        }
+
+        public List<DateTime> getKillZones()
+        {
+            return killZones.FirstCandleTimestamps;
         }
 
 
