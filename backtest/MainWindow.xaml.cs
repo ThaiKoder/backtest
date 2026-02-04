@@ -132,20 +132,41 @@ namespace backtest
         }
 
 
+        private readonly (string Name, TimeSpan Start, TimeSpan End)[] KillZoneHours =
+        {
+            ("Asia",   new TimeSpan(0, 0, 0),  new TimeSpan(3, 0, 0)),
+            ("London", new TimeSpan(7, 0, 0),  new TimeSpan(10, 0, 0)),
+            ("NY AM",  new TimeSpan(13, 0, 0), new TimeSpan(16, 0, 0))
+        };
+
+
+
 
         private void backtest_Click(object sender, RoutedEventArgs e)
         {
             var killZones = new KillZones(timeFrameData);
 
-            var zone = killZones.CalculateZone(
-                Chart.Model,
-                DateTime.Parse("2026-01-18T23:02:00.000000000Z"),
-                DateTime.Parse("2026-01-18T23:29:00.000000000Z")
+            DateTime startDate = new DateTime(2026, 01, 19, 0, 0, 0, DateTimeKind.Utc);
+            DateTime endDate = new DateTime(2026, 01, 23, 0, 0, 0, DateTimeKind.Utc);
 
-            );
+            for (DateTime day = startDate; day <= endDate; day = day.AddDays(1))
+            {
+                foreach (var kz in KillZoneHours)
+                {
+                    DateTime zoneStart = day.Add(kz.Start);
+                    DateTime zoneEnd = day.Add(kz.End);
 
-            Debug.WriteLine("Backtest clicked");
-            Debug.WriteLine(zone);
+                    var zone = killZones.CalculateZone(
+                        Chart.Model,
+                        zoneStart,
+                        zoneEnd
+                    );
+
+                    Debug.WriteLine($"{day:yyyy-MM-dd} {kz.Name}");
+                    Debug.WriteLine(zone);
+                }
+            }
+
             Chart.ApplyZoomCandle();
             OpenPanel();
         }
