@@ -95,8 +95,8 @@ namespace backtest
 
             foreach (var candle in ReadCandlesStream(filePath))
             {
-                if (candle.Symbol != contractName)
-                    continue;
+                //if (candle.Symbol != contractName)
+                //    continue;
 
                 var normalized = OHLCVNormalizer.Normalize(candle);
                 m1Data.Add(normalized);
@@ -203,7 +203,7 @@ namespace backtest
 
                 if (london != null && nyam != null)
                 {
-                    bool condition = london.Low < nyam.Low;
+                    bool condition = london.High > nyam.Low;
 
                     if (condition)
                         totalValides++;
@@ -324,6 +324,123 @@ namespace backtest
             Chart.UpdateData(busData, contractName);
 
             SessionTypeState = SessionType.RTH;
+        }
+
+        class DominantContractPoint
+        {
+            public DateTime Timestamp { get; set; }
+            public string Symbol { get; set; } = string.Empty;
+            public double Volume { get; set; }
+        }
+
+        private void devbta_Click(object sender, RoutedEventArgs e)
+        {
+            List<DominantContractPoint> result = new();
+
+            DateTime? currentTimestamp = null;
+            OHLCV? currentDominant = null;
+            string? lastSymbol = null;
+
+            // --- Étape 1 : sélection du contrat dominant par timestamp ---
+            foreach (var candle in timeFrameData)
+            {
+                var ts = candle.Hd.Timestamp;
+
+                if (currentTimestamp == null || ts != currentTimestamp)
+                {
+                    if (currentDominant != null && currentDominant.Symbol != lastSymbol)
+                    {
+                        result.Add(new DominantContractPoint
+                        {
+                            Timestamp = currentDominant.Hd.Timestamp,
+                            Symbol = currentDominant.Symbol,
+                            Volume = currentDominant.Volume
+                        });
+                        lastSymbol = currentDominant.Symbol;
+                    }
+
+                    currentTimestamp = ts;
+                    currentDominant = candle;
+                }
+                else
+                {
+                    // Même timestamp → garder le plus gros volume
+                    if (candle.Volume > currentDominant!.Volume)
+                    {
+                        currentDominant = candle;
+                    }
+                }
+            }
+
+            // Ajouter le dernier point
+            if (currentDominant != null && currentDominant.Symbol != lastSymbol)
+            {
+                result.Add(new DominantContractPoint
+                {
+                    Timestamp = currentDominant.Hd.Timestamp,
+                    Symbol = currentDominant.Symbol,
+                    Volume = currentDominant.Volume
+                });
+            }
+
+            // --- Affichage classique ---
+            //Debug.WriteLine("Timestamp               | Contract | Volume");
+            //Debug.WriteLine(new string('-', 55));
+            //foreach (var point in result)
+            //{
+            //    Debug.WriteLine($"{point.Timestamp:yyyy-MM-dd HH:mm:ss} | {point.Symbol,-8} | {point.Volume,10}");
+            //}
+
+            // --- Définir le départ de chaque trimestre (2 semaines avant certains mois) ---
+            DateTime GetQuarterStart(int year, int quarter)
+            {
+                return quarter switch
+                {
+                    1 => new DateTime(year, 3, 1).AddDays(-14),
+                    2 => new DateTime(year, 6, 1).AddDays(-14),
+                    3 => new DateTime(year, 9, 1).AddDays(-14),
+                    4 => new DateTime(year, 12, 1).AddDays(-14),
+                    _ => throw new ArgumentException("Quarter must be 1-4")
+                };
+            }
+
+            int GetQuarter(DateTime dt)
+            {
+                int year = dt.Year;
+
+                for (int q = 4; q >= 1; q--) // on vérifie du dernier trimestre vers le premier
+                {
+                    if (dt >= GetQuarterStart(year, q))
+                        return q;
+                }
+                return 1;
+            }
+
+            // --- Grouper par trimestre et année ---
+            var quarterlyGroups = result
+                .GroupBy(d => new
+                {
+                    Year = d.Timestamp.Year,
+                    Quarter = GetQuarter(d.Timestamp)
+                });
+
+            // --- Affichage des 2 plus gros contrats par trimestre ---
+            Debug.WriteLine("\n--- Top 2 contrats par trimestre ---");
+            foreach (var g in quarterlyGroups.OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Quarter))
+            {
+                var topContracts = g
+                    .GroupBy(x => x.Symbol)
+                    .Select(x => new { Symbol = x.Key, TotalVolume = x.Sum(v => v.Volume) })
+                    .OrderByDescending(x => x.TotalVolume)
+                    .Take(2)
+                    .ToList();
+
+                Debug.WriteLine($"Year {g.Key.Year}, Q{g.Key.Quarter}:");
+                foreach (var c in topContracts)
+                {
+                    Debug.WriteLine($"  {c.Symbol,-10} | Total Volume: {c.TotalVolume}");
+                }
+            }
         }
     }
 }

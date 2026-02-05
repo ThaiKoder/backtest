@@ -19,5 +19,6 @@
         <Button Content="Backtest" HorizontalAlignment="Right" Margin="0,5,10,0" VerticalAlignment="Top" Background="#FF191919" Foreground="#FFB6B6B6" BorderBrush="#00707070" Cursor="Hand" Click="backtest_Click"/>
         <Button Content="ETH" HorizontalAlignment="Right" Margin="0,0,40,24" VerticalAlignment="Bottom" Background="#FF191919" Foreground="#FFB6B6B6" BorderBrush="#00707070" Cursor="Hand" Click="ETH_Click"/>
         <Button Content="RTH" HorizontalAlignment="Right" Margin="0,0,10,24" VerticalAlignment="Bottom" Background="#FF191919" Foreground="#FFB6B6B6" BorderBrush="#00707070" Cursor="Hand" Click="RTH_Click"/>
+        <Button Content="DEV BETA" HorizontalAlignment="Right" Margin="0,5,63,0" VerticalAlignment="Top" Background="#FF191919" Foreground="#FFB6B6B6" BorderBrush="#00707070" Cursor="Hand" Click="devbta_Click" RenderTransformOrigin="-0.363,0.719"/>
     </Grid>
 </Window>
