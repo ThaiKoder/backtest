@@ -3,6 +3,7 @@ using OxyPlot.Axes;
 using OxyPlot.Series;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Reflection.Metadata;
 using System.Text;
@@ -45,6 +46,8 @@ namespace backtest
 
 
 
+
+
     public partial class MainWindow : Window
     {
         public Chart Chart { get; }
@@ -57,6 +60,9 @@ namespace backtest
         private List<OHLCV> m1Data;
         private List<OHLCV> timeFrameData;
         public KillZones killZones;
+
+
+
 
         public static IEnumerable<OHLCV> ReadCandlesStream(string filePath)
         {
@@ -91,18 +97,48 @@ namespace backtest
             ///////////////////////////////
             //Normalizer
             ///////////////////////////////
-            m1Data = new List<OHLCV>();
+
+            // Dictionnaire des contrats par trimestre
+            var quarterContracts = new Dictionary<int, string>
+            {
+                { 1, "NQM" },
+                { 2, "NQU" },
+                { 3, "NQZ" },
+                { 4, "NQH" }
+            };
+
+            // Récupère le trimestre d'une date
+            int GetQuarter(DateTime date)
+            {
+                if (date.Month <= 3) return 1;
+                if (date.Month <= 6) return 2;
+                if (date.Month <= 9) return 3;
+                return 4;
+            }
+
+            // Boucle de traitement des bougies
+            var m1Data = new List<OHLCV>();
 
             foreach (var candle in ReadCandlesStream(filePath))
             {
-                //if (candle.Symbol != contractName)
-                //    continue;
+                int quarter = GetQuarter(candle.Hd.Timestamp);
+                string contractName = quarterContracts[quarter];
+
+                // Filtre sur le contrat correspondant au trimestre
+                if (!candle.Symbol.Trim().StartsWith(contractName, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                //Debug.WriteLine($"{candle.Symbol.Trim().StartsWith(contractName, StringComparison.OrdinalIgnoreCase)} Candle timestamp: {candle.Hd.Timestamp}, Quarter: Q{quarter}, Expected Contract Prefix: {contractName}, Candle Symbol: {candle.Symbol}");
 
                 var normalized = OHLCVNormalizer.Normalize(candle);
                 m1Data.Add(normalized);
             }
 
+            //
+
             timeFrameData = m1Data;
+
+
+            
 
             ///////////////////////////////
             //Candle bus
@@ -392,14 +428,15 @@ namespace backtest
             //}
 
             // --- Définir le départ de chaque trimestre (2 semaines avant certains mois) ---
+
             DateTime GetQuarterStart(int year, int quarter)
             {
                 return quarter switch
                 {
-                    1 => new DateTime(year, 3, 1).AddDays(-14),
-                    2 => new DateTime(year, 6, 1).AddDays(-14),
-                    3 => new DateTime(year, 9, 1).AddDays(-14),
-                    4 => new DateTime(year, 12, 1).AddDays(-14),
+                    1 => new DateTime(year, 3, 1).AddDays(-7),
+                    2 => new DateTime(year, 6, 1).AddDays(-7),
+                    3 => new DateTime(year, 9, 1).AddDays(-7),
+                    4 => new DateTime(year, 12, 1).AddDays(-7),
                     _ => throw new ArgumentException("Quarter must be 1-4")
                 };
             }
