@@ -46,8 +46,6 @@ namespace backtest
 
 
 
-
-
     public partial class MainWindow : Window
     {
         public Chart Chart { get; }
@@ -60,9 +58,6 @@ namespace backtest
         private List<OHLCV> m1Data;
         private List<OHLCV> timeFrameData;
         public KillZones killZones;
-
-
-
 
         public static IEnumerable<OHLCV> ReadCandlesStream(string filePath)
         {
@@ -86,8 +81,63 @@ namespace backtest
                     yield return candle;
             }
         }
+
+
+        int GetQuarter(DateTime date)
+        {
+            int year = date.Year;
+
+            // Fonction pour trouver le 3e vendredi d'un mois
+            DateTime ThirdFriday(int y, int month)
+            {
+
+
+
+                //Recuperer le jour du premier mois
+                DateTime firstDay = new DateTime(y, month, 1);
+
+                //Ajouter le nombre de jours pour arriver au premier vendredi
+                int daysOffset = (int)firstDay.DayOfWeek % 5;
+                DateTime firstFriday;
+
+                //Si le premier jour est un vendredi, on reste dessus, sinon on avance jusqu'au vendredi suivant
+                firstFriday = (daysOffset != 0 ? firstDay.AddDays(5 - daysOffset) : firstDay);
+
+                //Faire * 3 pour arriver au 3e vendredi
+                DateTime thirdFriday = firstFriday.AddDays(14);
+
+                //-1 pour arriver au jour avant le 3e vendredi soit changement jeudi
+                return thirdFriday.AddDays(-1);
+            }
+
+            // Vendredi avant le 3e vendredi
+            DateTime Q1Date = ThirdFriday(year, 3);
+            DateTime Q2Date = ThirdFriday(year, 6);
+            DateTime Q3Date = ThirdFriday(year, 9);
+            DateTime Q4Date = ThirdFriday(year, 12);
+
+            if (date <= Q1Date)
+                return 1;
+            if (date <= Q2Date)
+                return 2;
+            if (date <= Q3Date)
+                return 3;
+            if (date <= Q4Date)
+                return 4;
+            return 1;
+        }
+
         public MainWindow()
         {
+            // Dictionnaire des contrats par trimestre
+            var quarterContracts = new Dictionary<int, string>
+           {
+               { 1, "NQM" },
+               { 2, "NQU" },
+               { 3, "NQZ" },
+               { 4, "NQH" }
+            };
+
             ///////////////////////////////
             //READ
             ///////////////////////////////
@@ -97,32 +147,21 @@ namespace backtest
             ///////////////////////////////
             //Normalizer
             ///////////////////////////////
+            m1Data = new List<OHLCV>();
 
-            // Dictionnaire des contrats par trimestre
-            var quarterContracts = new Dictionary<int, string>
-            {
-                { 1, "NQM" },
-                { 2, "NQU" },
-                { 3, "NQZ" },
-                { 4, "NQH" }
-            };
-
-            // Récupère le trimestre d'une date
-            int GetQuarter(DateTime date)
-            {
-                if (date.Month <= 3) return 1;
-                if (date.Month <= 6) return 2;
-                if (date.Month <= 9) return 3;
-                return 4;
-            }
-
-            // Boucle de traitement des bougies
-            var m1Data = new List<OHLCV>();
+            int lastQuarter = -1;
 
             foreach (var candle in ReadCandlesStream(filePath))
             {
+
                 int quarter = GetQuarter(candle.Hd.Timestamp);
                 string contractName = quarterContracts[quarter];
+
+                if (lastQuarter != quarter)
+                {
+                    Debug.WriteLine($"Changement de trimestre détecté : Q{quarter} ({contractName}) à {candle.Hd.Timestamp:yyyy-MM-dd HH:mm:ss}");
+                    lastQuarter = quarter;
+                }
 
                 // Filtre sur le contrat correspondant au trimestre
                 if (!candle.Symbol.Trim().StartsWith(contractName, StringComparison.OrdinalIgnoreCase))
@@ -133,12 +172,7 @@ namespace backtest
                 m1Data.Add(normalized);
             }
 
-            //
-
             timeFrameData = m1Data;
-
-
-            
 
             ///////////////////////////////
             //Candle bus
