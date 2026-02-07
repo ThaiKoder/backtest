@@ -50,7 +50,6 @@ namespace backtest
     {
         public Chart Chart { get; }
         string filePath = "data.json";
-        string contractName = "NQH6";
 
         private CandleBus _candleBus = new CandleBus();
         private TimeFrames TimesFrameState = TimeFrames.M1;
@@ -132,10 +131,11 @@ namespace backtest
             // Dictionnaire des contrats par trimestre
             var quarterContracts = new Dictionary<int, string>
            {
-               { 1, "NQM" },
-               { 2, "NQU" },
-               { 3, "NQZ" },
-               { 4, "NQH" }
+               { 1, "NQH" },
+               { 2, "NQM" },
+               { 3, "NQU" },
+               { 4, "NQZ" },
+
             };
 
             ///////////////////////////////
@@ -150,6 +150,7 @@ namespace backtest
             m1Data = new List<OHLCV>();
 
             int lastQuarter = -1;
+            DateTime? lastTimestamp = null;
 
             foreach (var candle in ReadCandlesStream(filePath))
             {
@@ -162,6 +163,17 @@ namespace backtest
                     Debug.WriteLine($"Changement de trimestre détecté : Q{quarter} ({contractName}) à {candle.Hd.Timestamp:yyyy-MM-dd HH:mm:ss}");
                     lastQuarter = quarter;
                 }
+
+                //if (candle.Hd.Timestamp == new DateTime(2026, 1, 28, 18, 35,0))
+                //{
+                //    continue;
+                //}
+
+                if (lastTimestamp == candle.Hd.Timestamp) continue; // Ignorer les doublons exacts de timestamp
+
+                lastTimestamp = candle.Hd.Timestamp;
+
+
 
                 // Filtre sur le contrat correspondant au trimestre
                 if (!candle.Symbol.Trim().StartsWith(contractName, StringComparison.OrdinalIgnoreCase))
@@ -183,7 +195,7 @@ namespace backtest
             ///////////////////////////////
             //Chart
             ///////////////////////////////
-            Chart = new Chart(m1Data, contractName);
+            Chart = new Chart(m1Data);
             DataContext = this;
 
             //KillZones
@@ -304,7 +316,7 @@ namespace backtest
                 return;
 
             var busData = _candleBus.BuildFromM1(timeFrameData, TimeFrame.M1);
-            Chart.UpdateData(busData, contractName);
+            Chart.UpdateData(busData);
 
             TimesFrameState = TimeFrames.M1;
         }
@@ -315,7 +327,7 @@ namespace backtest
                 return;
 
             var busData = _candleBus.BuildFromM1(timeFrameData, TimeFrame.M5);
-            Chart.UpdateData(busData, contractName);
+            Chart.UpdateData(busData);
 
             TimesFrameState = TimeFrames.M5;
         }
@@ -327,7 +339,7 @@ namespace backtest
                 return;
 
             var busData = _candleBus.BuildFromM1(timeFrameData, TimeFrame.M15);
-            Chart.UpdateData(busData, contractName);
+            Chart.UpdateData(busData);
 
             TimesFrameState = TimeFrames.M15;
         }
@@ -338,7 +350,7 @@ namespace backtest
                 return;
 
             var busData = _candleBus.BuildFromM1(timeFrameData, TimeFrame.M30);
-            Chart.UpdateData(busData, contractName);
+            Chart.UpdateData(busData);
 
             TimesFrameState = TimeFrames.M30;
         }
@@ -349,7 +361,7 @@ namespace backtest
                 return;
 
             var busData = _candleBus.BuildFromM1(timeFrameData, TimeFrame.H1);
-            Chart.UpdateData(busData, contractName);
+            Chart.UpdateData(busData);
 
             TimesFrameState = TimeFrames.H1;
         }
@@ -360,7 +372,7 @@ namespace backtest
                 return;
 
             var busData = _candleBus.BuildFromM1(timeFrameData, TimeFrame.H4);
-            Chart.UpdateData(busData, contractName);
+            Chart.UpdateData(busData);
 
             TimesFrameState = TimeFrames.H4;
         }
@@ -375,7 +387,7 @@ namespace backtest
                 .ToList();
 
             var busData = _candleBus.BuildFromM1(timeFrameData, (TimeFrame)TimesFrameState);
-            Chart.UpdateData(busData, contractName);
+            Chart.UpdateData(busData);
 
             SessionTypeState = SessionType.ETH;
         }
@@ -391,7 +403,7 @@ namespace backtest
                 .ToList();
 
             var busData = _candleBus.BuildFromM1(timeFrameData, (TimeFrame)TimesFrameState);
-            Chart.UpdateData(busData, contractName);
+            Chart.UpdateData(busData);
 
             SessionTypeState = SessionType.RTH;
         }

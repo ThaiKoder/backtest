@@ -15,7 +15,7 @@ namespace backtest
         private LinearAxis _yAxis;
         private CandleStickSeries _candleSeries;
 
-        public Chart(IEnumerable<OHLCV> ohlcvs, string symbol)
+        public Chart(IEnumerable<OHLCV> ohlcvs)
         {
             Model = new PlotModel
             {
@@ -26,7 +26,7 @@ namespace backtest
 
             CreateAxes();
             CreateSeries();
-            LoadCandles(ohlcvs, symbol);
+            LoadCandles(ohlcvs);
             ApplyInitialZoom(200);
 
             Model.Series.Add(_candleSeries);
@@ -95,12 +95,12 @@ namespace backtest
             };
         }
 
-        private void LoadCandles(IEnumerable<OHLCV> ohlcvs, string symbol)
+        private void LoadCandles(IEnumerable<OHLCV> ohlcvs)
         {
             foreach (var o in ohlcvs)
             {
-                if (o.Symbol != symbol)
-                    continue;
+                //if (o.Symbol != symbol)
+                //    continue;
 
                 _candleSeries.Items.Add(new HighLowItem(
                     DateTimeAxis.ToDouble(o.Hd.Timestamp),
@@ -139,13 +139,13 @@ namespace backtest
         }
 
 
-        public void UpdateData(IEnumerable<OHLCV> ohlcvs, string symbol)
+        public void UpdateData(IEnumerable<OHLCV> ohlcvs)
         {
             // 1️ Vider les anciennes bougies
             _candleSeries.Items.Clear();
 
             // 2️ Ajouter les nouvelles bougies
-            foreach (var o in ohlcvs.Where(x => x.Symbol == symbol))
+            foreach (var o in ohlcvs)
             {
                 _candleSeries.Items.Add(new HighLowItem(
                     DateTimeAxis.ToDouble(o.Hd.Timestamp),
